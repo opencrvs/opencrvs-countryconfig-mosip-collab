@@ -40,7 +40,6 @@ import {
 import { formMessageDescriptors } from '../common/messages'
 import { Event, ISerializedForm } from '../types/types'
 import {
-  getNationalIDValidators,
   informantBirthDateConditionals,
   informantFamilyNameConditionals,
   ageOfIndividualValidators,
@@ -284,13 +283,10 @@ export const deathForm = {
               exactDateOfBirthUnknownConditional.concat(hideIfInformantSpouse),
               ageOfIndividualValidators
             ),
-            getNationality(certificateHandlebars.informantNationality, []),
-            // getNationalID(
-            //   'informantID',
-            //   hideIfNidIntegrationEnabled,
-            //   getNationalIDValidators('informant'),
-            //   certificateHandlebars.informantNID
-            // ),
+            getNationality(
+              certificateHandlebars.informantNationality,
+              hideIfInformantSpouse
+            ),
             getNIDVerificationButton('informantNidVerification', [], []),
             // ADDRESS FIELDS WILL RENDER HERE
             divider('informant-address-separator', hideIfInformantSpouse),

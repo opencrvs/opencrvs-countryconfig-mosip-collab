@@ -258,12 +258,6 @@ export const birthForm: ISerializedForm = {
               certificateHandlebars.informantNationality,
               hideIfInformantMotherOrFather
             ), // Required field.
-            // getNationalID(
-            //   'informantID',
-            //   hideIfInformantMotherOrFather,
-            //   getNationalIDValidators('informant'),
-            //   certificateHandlebars.informantNID
-            // ),
             getNIDVerificationButton(
               'informantNidVerification',
               hideIfInformantMotherOrFather,
@@ -398,12 +392,6 @@ export const birthForm: ISerializedForm = {
               certificateHandlebars.fatherNationality,
               detailsExist
             ), // Required field.
-            // getNationalID(
-            //   'iD',
-            //   hideIfNidIntegrationEnabled.concat(detailsExist),
-            //   getNationalIDValidators('father'),
-            //   certificateHandlebars.fatherNID
-            // ),
             getNIDVerificationButton('fatherNidVerification', detailsExist, []),
             getFirstNameField(
               'fatherNameInEnglish',

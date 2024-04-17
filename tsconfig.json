@@ -27,7 +27,6 @@
     "strictNullChecks": true,
     "types": [
       "fhir",
-      "jest",
       "geojson"
     ]
   },
