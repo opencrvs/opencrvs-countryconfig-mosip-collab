@@ -30,7 +30,10 @@ export const certificateHandlebars = {
   deceasedGender: 'deceasedGender',
   deceasedBirthDate: 'deceasedBirthDate',
   deceasedNationality: 'deceasedNationality',
-  deceasedNID: 'deceasedNID',
+  deceasedNationalId: 'deceasedNationalId',
+  deceasedPassport: 'deceasedPassport',
+  deceasedAlienId: 'deceasedAlienId',
+  deceasedRefugeeId: 'deceasedRefugeeId',
   deceasedMaritalStatus: 'deceasedMaritalStatus',
   countryPrimaryDeceased: 'countryPrimaryDeceased',
   statePrimaryDeceased: 'statePrimaryDeceased', // @deprecated use statePrimaryDeceasedId instead
@@ -61,8 +64,12 @@ export const certificateHandlebars = {
   causeOfDeathEstablished: 'causeOfDeathEstablished',
   causeOfDeathMethod: 'causeOfDeathMethod',
   deathDescription: 'deathDescription',
-  placeOfDeath: 'placeOfDeath',
-  countryPlaceofdeath: 'countryPlaceofdeath',
+  placeOfDeath: 'placeOfDeath', // equal to either the name of a HEALTH_FACILITY or undefined
+  placeOfDeathCountry: 'placeOfDeathCountry', // used where event occurs in a HEALTH_FACILITY
+  placeOfDeathDistrict: 'placeOfDeathDistrict', // used where event occurs in a HEALTH_FACILITY
+  placeOfDeathFacility: 'placeOfDeathFacility', // used where event occurs in a HEALTH_FACILITY
+  placeOfDeathState: 'placeOfDeathState', // used where event occurs in a HEALTH_FACILITY
+  countryPlaceofdeath: 'countryPlaceofdeath', // THE FOLLOWING are used where event occurs in a PRIVATE_HOME or OTHER therefore placeOfBirth is undefined
   statePlaceofdeath: 'statePlaceofdeath', // @deprecated use statePlaceofdeathId instead
   statePlaceofdeathId: 'statePlaceofdeathId',
   districtPlaceofdeath: 'districtPlaceofdeath', // @deprecated use districtPlaceofdeathId instead
@@ -87,7 +94,10 @@ export const certificateHandlebars = {
   informantFamilyName: 'informantFamilyName',
   informantBirthDate: 'informantBirthDate',
   informantNationality: 'informantNationality',
-  informantNID: 'informantNID',
+  informantNationalId: 'informantNationalId',
+  informantPassport: 'informantPassport',
+  informantAlienId: 'informantAlienId',
+  informantRefugeeId: 'informantRefugeeId',
   countryPrimaryInformant: 'countryPrimaryInformant',
   statePrimaryInformant: 'statePrimaryInformant', // @deprecated use statePrimaryInformantId instead
   statePrimaryInformantId: 'statePrimaryInformantId',
@@ -115,7 +125,10 @@ export const certificateHandlebars = {
   spouseReasonNotApplying: 'spouseReasonNotApplying',
   spouseBirthDate: 'spouseBirthDate',
   spouseNationality: 'spouseNationality',
-  spouseNID: 'spouseNID',
+  spouseNationalId: 'spouseNationalId',
+  spousePassport: 'spousePassport',
+  spouseAlienId: 'spouseAlienId',
+  spouseRefugeeId: 'spouseRefugeeId',
   spouseOccupation: 'spouseOccupation',
   spouseEducationalAttainment: 'spouseEducationalAttainment',
   countryPrimarySpouse: 'countryPrimarySpouse',
@@ -144,7 +157,10 @@ export const certificateHandlebars = {
   motherFirstName: 'motherFirstName',
   motherFamilyName: 'motherFamilyName',
   motherNationality: 'motherNationality',
-  motherNID: 'motherNID',
+  motherNationalId: 'motherNationalId',
+  motherPassport: 'motherPassport',
+  motherAlienId: 'motherAlienId',
+  motherRefugeeId: 'motherRefugeeId',
   motherMaritalStatus: 'motherMaritalStatus',
   motherOccupation: 'motherOccupation',
   motherEducationalAttainment: 'motherEducationalAttainment',
@@ -152,7 +168,10 @@ export const certificateHandlebars = {
   fatherFirstName: 'fatherFirstName',
   fatherFamilyName: 'fatherFamilyName',
   fatherNationality: 'fatherNationality',
-  fatherNID: 'fatherNID',
+  fatherNationalId: 'fatherNationalId',
+  fatherPassport: 'fatherPassport',
+  fatherAlienId: 'fatherAlienId',
+  fatherRefugeeId: 'fatherRefugeeId',
   fatherMaritalStatus: 'fatherMaritalStatus',
   fatherOccupation: 'fatherOccupation',
   fatherEducationalAttainment: 'fatherEducationalAttainment',

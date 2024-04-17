@@ -26,7 +26,7 @@ on:
           - users
           - crontab
           - mongodb
-          - data
+          - data-partition
           - swap
           - ufw
           - fail2ban
@@ -106,7 +106,7 @@ jobs:
           ansible_user: ${{ secrets.SSH_USER }}
 
       - name: Run playbook
-        uses: dawidd6/action-ansible-playbook@v2
+        uses: dawidd6/action-ansible-playbook@v2.8.0
         env:
           ANSIBLE_PERSISTENT_COMMAND_TIMEOUT: 10
           ANSIBLE_SSH_TIMEOUT: 10
