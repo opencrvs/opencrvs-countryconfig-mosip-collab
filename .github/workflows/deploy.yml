@@ -1,4 +1,4 @@
-name: Deploy development (farajaland-mosip)
+name: Deploy
 run-name: Deploy to ${{ github.event.inputs.environment }} with reset=${{ github.event.inputs.reset }} core=${{ github.event.inputs.core-image-tag }} country config=${{ github.event.inputs.countryconfig-image-tag }}
 on:
   workflow_dispatch:
@@ -10,6 +10,7 @@ on:
         default: 'development'
         options:
           - development
+          - qa
       core-image-tag:
         description: Core DockerHub image tag
         required: true
