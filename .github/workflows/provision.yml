@@ -10,6 +10,7 @@ on:
         required: true
         options:
           - development
+          - qa
       tag:
         type: choice
         description: Select group tag you want to execute
