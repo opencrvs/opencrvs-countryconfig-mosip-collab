@@ -2,9 +2,6 @@ version: '3.3'
 
 services:
   traefik:
-    networks:
-      - overlay_net
-      - vpn
     command:
       # Use HTTP-01 challenge as the web server is publicly available
       # https://doc.traefik.io/traefik/https/acme/#httpchallenge
@@ -29,8 +26,6 @@ services:
       - --entrypoints.websecure.address=:443
       - --accesslog=true
       - --accesslog.format=json
-      - --ping=true
-
   notification:
     environment:
       - LANGUAGES=en,fr
@@ -54,6 +49,13 @@ services:
       - CHECK_INVALID_TOKEN=true
       - MONGO_URL=mongodb://mongo1/user-mgnt?replicaSet=rs0
       - SENTRY_DSN=${SENTRY_DSN}
+      - SENDER_EMAIL_ADDRESS=${SENDER_EMAIL_ADDRESS}
+      - ALERT_EMAIL=${ALERT_EMAIL}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USERNAME=${SMTP_USERNAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - SMTP_SECURE=${SMTP_SECURE}
     deploy:
       replicas: 1
     networks:
@@ -67,9 +69,14 @@ services:
     environment:
       - LANGUAGES=en,fr
       - SENTRY_DSN=${SENTRY_DSN}
-      - COUNTRY=FAR
+      - COUNTRY=IND
       - QA_ENV=true
       - NODE_ENV=production
+      - NATIONAL_ID_OIDP_BASE_URL=${NATIONAL_ID_OIDP_BASE_URL}
+      - NATIONAL_ID_OIDP_TOKEN_URL=${NATIONAL_ID_OIDP_TOKEN_URL}
+      - NATIONAL_ID_OIDP_USERINFO_URL=${NATIONAL_ID_OIDP_USERINFO_URL}
+      - NATIONAL_ID_OIDP_CLIENT_PRIVATE_KEY=${NATIONAL_ID_OIDP_CLIENT_PRIVATE_KEY}
+      - NATIONAL_ID_OIDP_JWT_AUD_CLAIM=${NATIONAL_ID_OIDP_JWT_AUD_CLAIM}
 
   workflow:
     environment:
@@ -101,6 +108,9 @@ services:
       - SENTRY_DSN=${SENTRY_DSN}
       - QA_ENV=true
       - NODE_ENV=production
+      - NATIONAL_ID_OIDP_BASE_URL=${NATIONAL_ID_OIDP_BASE_URL}
+      - NATIONAL_ID_OIDP_CLIENT_ID=${NATIONAL_ID_OIDP_CLIENT_ID}
+      - NATIONAL_ID_OIDP_ESSENTIAL_CLAIMS=${NATIONAL_ID_OIDP_ESSENTIAL_CLAIMS}
 
   webhooks:
     environment:
@@ -124,46 +134,66 @@ services:
       - QA_ENV=true
       - NODE_ENV=production
 
-  wg-easy:
-    image: ghcr.io/wg-easy/wg-easy:8
-    environment:
-      - WG_HOST=vpn.{{hostname}}
-      - PASSWORD=${VPN_ADMIN_PASSWORD}
-      - WG_DEFAULT_ADDRESS=10.13.13.x
-      - WG_ALLOWED_IPS=0.0.0.0/0
-      - WG_PORT=51822
-      - WG_POST_UP=iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o eth+ -j MASQUERADE
-      - WG_POST_DOWN=iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o eth+ -j MASQUERADE
-    volumes:
-      - /data/wireguard:/etc/wireguard
+  mosiptokenseeder:
+    image: mosipdev/mosip-token-seeder:develop
     ports:
-      - '51822:51820/udp'
-    cap_add:
-      - NET_ADMIN
-      - SYS_MODULE
-    sysctls:
-      - net.ipv4.conf.all.src_valid_mark=1
-      - net.ipv4.ip_forward=1
+      - '8085:8080'
+    deploy:
+      replicas: 1
+    networks:
+      - overlay_net
+    volumes:
+      - /data/secrets/mosip:/seeder/certs
+    restart: unless-stopped
+    environment:
+      - TOKENSEEDER_MOSIP_AUTH__PARTNER_APIKEY=${TOKENSEEDER_MOSIP_AUTH__PARTNER_APIKEY}
+      - TOKENSEEDER_MOSIP_AUTH__PARTNER_MISP_LK=${TOKENSEEDER_MOSIP_AUTH__PARTNER_MISP_LK}
+      - TOKENSEEDER_MOSIP_AUTH__PARTNER_ID=${TOKENSEEDER_MOSIP_AUTH__PARTNER_ID}
+      - TOKENSEEDER_MOSIP_AUTH_SERVER__IDA_AUTH_DOMAIN_URI=${TOKENSEEDER_MOSIP_AUTH__IDA_AUTH_DOMAIN_URI}
+      - TOKENSEEDER_MOSIP_AUTH_SERVER__IDA_AUTH_URL=${TOKENSEEDER_MOSIP_AUTH__IDA_AUTH_URL}
+      - TOKENSEEDER_CRYPTO_SIGNATURE__SIGN_P12_FILE_PASSWORD=${TOKENSEEDER_CRYPTO_SIGNATURE__SIGN_P12_FILE_PASSWORD}
+      - TOKENSEEDER_AUTHTOKEN__MANDATORY_VALIDATION_AUTH_FIELDS="name,gender,dob"
+      - TOKENSEEDER_CRYPTO_ENCRYPT__ENCRYPT_CERT_PATH=/seeder/certs/ida.partner.crt
+      - TOKENSEEDER_CRYPTO_SIGNATURE__SIGN_P12_FILE_PATH=/seeder/certs/keystore.p12
+      - TOKENSEEDER_ROOT__SYNC_OPERATION_MODE=true
+
+  mosip-mediator:
+    image: opencrvs/mosip-api:ac2f8e6
+    ports:
+      - '4545:4545'
     deploy:
       labels:
         - 'traefik.enable=true'
-        - 'traefik.http.routers.vpn.rule=Host(`vpn.{{hostname}}`)'
-        - 'traefik.http.services.vpn.loadbalancer.server.port=51821'
-        - 'traefik.http.routers.vpn.tls=true'
-        - 'traefik.http.routers.vpn.tls.certresolver=certResolver'
-        - 'traefik.http.routers.vpn.entrypoints=web,websecure'
-        - 'traefik.docker.network=opencrvs_vpn'
-        - 'traefik.http.middlewares.vpn.headers.customresponseheaders.Pragma=no-cache'
-        - 'traefik.http.middlewares.vpn.headers.customresponseheaders.Cache-control=no-store'
-        - 'traefik.http.middlewares.vpn.headers.customresponseheaders.X-Robots-Tag=none'
-        - 'traefik.http.middlewares.vpn.headers.stsseconds=31536000'
-        - 'traefik.http.middlewares.vpn.headers.stsincludesubdomains=true'
-        - 'traefik.http.middlewares.vpn.headers.stspreload=true'
-    restart: unless-stopped
+        - 'traefik.http.routers.mosip-mediator.rule=Host(`mosip-mediator.{{hostname}}`)'
+        - 'traefik.http.services.mosip-mediator.loadbalancer.server.port=4545'
+        - 'traefik.http.routers.mosip-mediator.tls=true'
+        - 'traefik.http.routers.mosip-mediator.tls.certresolver=certResolver'
+        - 'traefik.http.routers.mosip-mediator.entrypoints=web,websecure'
+        - 'traefik.docker.network=opencrvs_overlay_net'
+        - 'traefik.http.middlewares.mosip-mediator.headers.customresponseheaders.Pragma=no-cache'
+        - 'traefik.http.middlewares.mosip-mediator.headers.customresponseheaders.Cache-control=no-store'
+        - 'traefik.http.middlewares.mosip-mediator.headers.customresponseheaders.X-Robots-Tag=none'
+        - 'traefik.http.middlewares.mosip-mediator.headers.stsseconds=31536000'
+        - 'traefik.http.middlewares.mosip-mediator.headers.stsincludesubdomains=true'
+        - 'traefik.http.middlewares.mosip-mediator.headers.stspreload=true'
+      replicas: 1
     networks:
-      - vpn
-
-networks:
-  vpn:
-    driver: overlay
-    attachable: false
+      - overlay_net
+    volumes:
+      - /data/secrets/mosip:/certs/mnt
+    environment:
+      - AUTH_URL=http://auth:4040
+      - WEBHOOK_URL=http://webhooks:2525/webhooks
+      - OPENHIM_MEDIATOR_URL=http://countryconfig:3040/mosip-openhim-mediator
+      - CALLBACK_URL=http://mosip-mediator:4545/webhooks
+      - CLIENT_ID=${MOSIP_MEDIATOR_CLIENT_ID}
+      - CLIENT_SECRET=${MOSIP_MEDIATOR_CLIENT_SECRET}
+      - SHA_SECRET=${MOSIP_MEDIATOR_SHA_SECRET}
+      - MOSIP_AUTH_CLIENT_ID=${MOSIP_MEDIATOR_AUTH_CLIENT_ID}
+      - MOSIP_AUTH_CLIENT_SECRET=${MOSIP_MEDIATOR_AUTH_CLIENT_SECRET}
+      - MOSIP_AUTH_URL=${MOSIP_MEDIATOR_AUTH_URL}
+      - MOSIP_AUTH_USER=${MOSIP_MEDIATOR_AUTH_USER}
+      - MOSIP_AUTH_PASS=${MOSIP_MEDIATOR_AUTH_PASS}
+      - MOSIP_BIRTH_PROXY_CALLBACK_URL=${MOSIP_MEDIATOR_BIRTH_PROXY_CALLBACK_URL}
+      - MOSIP_DEATH_PROXY_CALLBACK_URL=${MOSIP_MEDIATOR_DEATH_PROXY_CALLBACK_URL}
+      - MOSIP_GENERATE_AID_URL=${MOSIP_MEDIATOR_GENERATE_AID_URL}
